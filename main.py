@@ -1,3 +1,8 @@
+"""
+Description: Main script to demonstrate milestone 1 scripts.
+Author: Jake Licmo
+Date: 2025-03-28
+"""
 from datetime import datetime
 from scrape_weather import WeatherScraper
 from db_operations import DBOperations

@@ -1,10 +1,25 @@
+"""
+Description: Python Project Milestone 1 - Weather Scraper
+Author: Jake Licmo
+Date: 2025-03-28
+"""
 import requests
 from html.parser import HTMLParser
 from datetime import datetime, timedelta
 import time
 
 class WeatherScraper(HTMLParser):
+    """
+     Scrapes historical daily weather data (Max, Min, Mean) from Environment Canada's climate data website.
+    """
+
     def __init__(self, base_url, start_date, earliest_date=None):
+        """
+        Initializes the WeatherScraper with the base URL, start date, and earliest date for scraping.
+        :param base_url: The base URL for the weather data page.
+        :param start_date: The date to start scraping from.
+        :param earliest_date: The earliest date to scrape data for. If None, it will scrape until the current date.
+        """
         super().__init__()
         self.base_url = base_url
         self.start_date = start_date
@@ -19,15 +34,18 @@ class WeatherScraper(HTMLParser):
         self.col_count = 0 # Counter to track which temperature value we are on (Max, Min, Mean)
         self.row_date = None 
 
-        # Date tracking for stopping condition
+        # Date tracking for stopping condition, preventing infinite loops
         self.first_row_date_on_page = None
         self.previous_first_row_date = None # To detect repeated month/year (October 1996)
 
-        # Current URL context to track what date is requested
+        # Current request context
         self.current_year = None
         self.current_month = None
 
     def handle_starttag(self, tag, attrs):
+        """
+        Handles the the opening HTML tags whiel parsing.
+        """
         if tag == "tr": # Tracks the start of a new row
             self.in_row = True
             self.temp_values = []
@@ -47,6 +65,9 @@ class WeatherScraper(HTMLParser):
                         self.row_date = None
 
     def handle_endtag(self, tag):
+        """
+        Handles the closing HTML tags while parsing.
+        """
         if tag == "tr" and self.in_row:
             if self.row_date and len(self.temp_values) == 3: # Checks if we have processed the 3 temperature values
                 if not self.first_row_date_on_page: # Used to stop at the earliest date.
@@ -69,6 +90,9 @@ class WeatherScraper(HTMLParser):
             self.in_abbr = False
 
     def handle_data(self, data):
+        """
+        Extracts and processes the data within the HTML tags.
+        """
         clean_data = data.strip() # Strip whitespace
 
         if self.in_row and self.in_td and self.col_count < 3:
@@ -82,6 +106,11 @@ class WeatherScraper(HTMLParser):
             self.col_count += 1
 
     def scrape(self):
+        """
+        Initiates the scraping process, moving backward month-by-month from start_date to earliest_date.
+
+        :return: A dictionary containing the scraped weather data.
+        """
         current_date = self.start_date
 
         while True:
