@@ -4,10 +4,11 @@ from datetime import datetime, timedelta
 import time
 
 class WeatherScraper(HTMLParser):
-    def __init__(self, base_url, start_date):
+    def __init__(self, base_url, start_date, earliest_date=None):
         super().__init__()
         self.base_url = base_url
         self.start_date = start_date
+        self.earliest_date = earliest_date
         self.weather_data = {}
 
         # Flags for parsing
@@ -84,6 +85,10 @@ class WeatherScraper(HTMLParser):
         current_date = self.start_date
 
         while True:
+            if self.earliest_date and current_date < self.earliest_date:
+                print(f"Reached earliest target date ({self.earliest_date.strftime('%Y-%m-%d')}). Stopping.")
+                break
+
             self.current_year = current_date.year
             self.current_month = current_date.month
 
@@ -113,18 +118,19 @@ class WeatherScraper(HTMLParser):
             # Move to previous month
             first_day_this_month = datetime(self.current_year, self.current_month, 1)
             current_date = first_day_this_month - timedelta(days=1)
-
-
+            
         return self.weather_data
+
 
 
 if __name__ == "__main__":
     today = datetime.today()
+    EARLIEST_DATE_EXAMPLE = datetime(2018,1,1)
     BASE_URL = (
         "http://climate.weather.gc.ca/climate_data/daily_data_e.html"
         "?StationID=27174&timeframe=2&StartYear=1840&EndYear={year}"
         "&Day=1&Year={year}&Month={month}#"
     )
-    scraper = WeatherScraper(BASE_URL, today)
+    scraper = WeatherScraper(BASE_URL, today, EARLIEST_DATE_EXAMPLE)
     data = scraper.scrape()
     print(data)
