@@ -28,8 +28,8 @@ class DBOperations:
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     sample_date TEXT NOT NULL,
                     location TEXT NOT NULL,
-                    min_temp REAL,
                     max_temp REAL,
+                    min_temp REAL,
                     avg_temp REAL,
                     UNIQUE(sample_date, location)
                 )
@@ -49,29 +49,27 @@ class DBOperations:
             ''', (location,))
             return cursor.fetchall()
 
-    def save_data(self, data_dict):
+    def save_data(self, data_dict, location="Winnipeg"):
         """
         Saves weather data to the database.
         :param data_dict: A dictionary containing weather data.
         """
         with DBCM(self.db_name) as cursor:
-            for sample_date, weather in data_dict.items():
+            for sample_date, temps in data_dict.items():
                 try:
                     cursor.execute('''
                         INSERT OR IGNORE INTO weather (sample_date, location, min_temp, max_temp, avg_temp)
                         VALUES (?, ?, ?, ?, ?)
                     ''', (
                         sample_date,
-                        weather['location'],
-                        weather['min_temp'],
-                        weather['max_temp'],
-                        weather['avg_temp']
+                        location,
+                        temps.get('Max'),
+                        temps.get('Min'),
+                        temps.get('Mean')
                     ))
-                except sqlite3.Error as e:
+                except Exception as e:
                     print(f"Error saving data for {sample_date}: {e}")
-
-
-
+                    
     def purge_data(self):
         """
         Deletes all data from the weather table.
