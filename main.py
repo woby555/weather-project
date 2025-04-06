@@ -19,7 +19,7 @@ def main():
     the weather scraper and database operations.
     """
     today = datetime.today()
-    earliest_date = datetime(2022, 1, 1)
+    earliest_date = datetime(2018, 1, 1)
 
     scraper = WeatherScraper(BASE_URL, today, earliest_date)
     raw_data = scraper.scrape()

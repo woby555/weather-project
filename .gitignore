@@ -4,3 +4,4 @@ __pycache__
 __pycache__/db_operations.cpython-313.pyc
 __pycache__/dbcm.cpython-313.pyc
 __pycache__/scrape_weather.cpython-313.pyc
+weather_data.db
