@@ -14,8 +14,12 @@ BASE_URL = (
 )
 
 def main():
+    """
+    Main function to demonstrate the functionality of 
+    the weather scraper and database operations.
+    """
     today = datetime.today()
-    earliest_date = datetime(2018, 1, 1)
+    earliest_date = datetime(2022, 1, 1)
 
     scraper = WeatherScraper(BASE_URL, today, earliest_date)
     raw_data = scraper.scrape()
@@ -26,11 +30,11 @@ def main():
     # print("Purging old data from the database...")
     # db.purge_data()
 
-    db.save_data(raw_data)  
+    db.save_data(raw_data)
 
     print("\nSample data fetched from DB:")
     records = db.fetch_data("Winnipeg")
-    for row in records:
+    for row in records[:15]:
         print(row)
 
 if __name__ == "__main__":

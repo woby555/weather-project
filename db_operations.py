@@ -3,7 +3,7 @@ Description: Python Project Milestone 1 - Database Operations
 Author: Jake Licmo
 Date: 2025-03-28
 """
-import sqlite3
+
 from dbcm import DBCM
 
 class DBOperations:
@@ -69,7 +69,7 @@ class DBOperations:
                     ))
                 except Exception as e:
                     print(f"Error saving data for {sample_date}: {e}")
-                    
+
     def purge_data(self):
         """
         Deletes all data from the weather table.

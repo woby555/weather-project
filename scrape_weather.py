@@ -3,22 +3,24 @@ Description: Python Project Milestone 1 - Weather Scraper
 Author: Jake Licmo
 Date: 2025-03-28
 """
-import requests
-from html.parser import HTMLParser
 from datetime import datetime, timedelta
-import time
+from html.parser import HTMLParser
+import requests
 
 class WeatherScraper(HTMLParser):
     """
-     Scrapes historical daily weather data (Max, Min, Mean) from Environment Canada's climate data website.
+     Scrapes historical daily weather data (Max, Min, Mean) 
+     from Environment Canada's climate data website.
     """
 
     def __init__(self, base_url, start_date, earliest_date=None):
         """
-        Initializes the WeatherScraper with the base URL, start date, and earliest date for scraping.
+        Initializes the WeatherScraper with the base URL, start date,
+        and earliest date for scraping.
         :param base_url: The base URL for the weather data page.
         :param start_date: The date to start scraping from.
-        :param earliest_date: The earliest date to scrape data for. If None, it will scrape until the current date.
+        :param earliest_date: The earliest date to scrape data for.
+        If None, it will scrape until the current date.
         """
         super().__init__()
         self.base_url = base_url
@@ -69,7 +71,8 @@ class WeatherScraper(HTMLParser):
         Handles the closing HTML tags while parsing.
         """
         if tag == "tr" and self.in_row:
-            if self.row_date and len(self.temp_values) == 3: # Checks if we have processed the 3 temperature values
+             # Checks if we have processed the 3 temperature values
+            if self.row_date and len(self.temp_values) == 3:
                 if not self.first_row_date_on_page: # Used to stop at the earliest date.
                     self.first_row_date_on_page = self.row_date
 
@@ -107,7 +110,8 @@ class WeatherScraper(HTMLParser):
 
     def scrape(self):
         """
-        Initiates the scraping process, moving backward month-by-month from start_date to earliest_date.
+        Initiates the scraping process, moving backward month-by-month 
+        from start_date to earliest_date.
 
         :return: A dictionary containing the scraped weather data.
         """
@@ -147,14 +151,14 @@ class WeatherScraper(HTMLParser):
             # Move to previous month
             first_day_this_month = datetime(self.current_year, self.current_month, 1)
             current_date = first_day_this_month - timedelta(days=1)
-            
+
         return self.weather_data
 
 
 
 if __name__ == "__main__":
     today = datetime.today()
-    EARLIEST_DATE_EXAMPLE = datetime(2018,1,1)
+    EARLIEST_DATE_EXAMPLE = datetime(2022,1,1)
     BASE_URL = (
         "http://climate.weather.gc.ca/climate_data/daily_data_e.html"
         "?StationID=27174&timeframe=2&StartYear=1840&EndYear={year}"

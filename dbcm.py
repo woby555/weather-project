@@ -8,7 +8,7 @@ import sqlite3
 
 class DBCM:
     """
-    Database Context Manager for SQLite.
+    Database Context Manager.
     This class provides a context manager for SQLite database operations.
     It handles the connection and cursor creation, and ensures that
     the connection is properly closed after use.
@@ -36,4 +36,3 @@ class DBCM:
         if exc_type is None:
             self.conn.commit()
         self.conn.close()
-
