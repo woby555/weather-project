@@ -6,8 +6,7 @@ Date: 2025-03-28
 from datetime import datetime, timedelta
 from html.parser import HTMLParser
 import requests
-import os
-import csv
+
 
 class WeatherScraper(HTMLParser):
     """
@@ -36,7 +35,7 @@ class WeatherScraper(HTMLParser):
         self.in_abbr = False # <abbr> tags
         self.temp_values = [] # Temporary storage for temperature values
         self.col_count = 0 # Counter to track which temperature value we are on (Max, Min, Mean)
-        self.row_date = None 
+        self.row_date = None
 
         # Date tracking for stopping condition, preventing infinite loops
         self.first_row_date_on_page = None

@@ -1,12 +1,23 @@
+"""
+Description: Weather Processor script for managing weather data scraping, 
+database operations, and plotting.
+Author: Jake Licmo
+Date: 2025-04-04
+"""
 from datetime import timedelta
 from datetime import datetime
 from scrape_weather import WeatherScraper
-from db_operations import DBOperations
+from db_operations import DBOperations, DBCM
 from plot_operations import PlotOperations
-from db_operations import DBCM
 
 class WeatherProcessor:
+    """
+    Main class to handle the weather data processing workflow.
+    """
     def __init__(self):
+        """
+        Initializes the WeatherProcessor with necessary components.
+        """
         self.scraper = WeatherScraper
         self.db = DBOperations()
         self.plotter = PlotOperations()
@@ -17,6 +28,9 @@ class WeatherProcessor:
         )
 
     def run(self):
+        """
+        Main loop to run the weather data processing program.
+        """
         while True:
             self.show_menu()
             choice = input("Enter your choice: ").strip()
@@ -36,6 +50,9 @@ class WeatherProcessor:
                 print("Invalid choice. Please try again.\n")
 
     def show_menu(self):
+        """
+        Displays the main menu options to the user.
+        """
         print("\n===== Weather Data Processor =====")
         print("1. Download full weather data")
         print("2. Update weather data")
@@ -44,6 +61,9 @@ class WeatherProcessor:
         print("5. Exit")
 
     def download_full_data(self):
+        """
+        Downloads the full weather data from the specified URL and saves it to the database.
+        """
         try:
             file_path = input("Enter the output CSV file path (e.g. weather_data/export.csv): ").strip()
             if not file_path.endswith(".csv"):
@@ -53,6 +73,9 @@ class WeatherProcessor:
             print(f"Failed to export data: {e}")
 
     def update_data(self):
+        """
+        Updates the weather data in the database by scraping new data from the web.
+        """
         latest_str = self.db.get_latest_date()
         location = "Winnipeg"
 
@@ -89,6 +112,9 @@ class WeatherProcessor:
             print("No new data found.")
 
     def generate_box_plot(self):
+        """
+        Generates a box plot for the mean temperatures over a specified year range.
+        """
         try:
             from_year = int(input("Enter starting year (e.g. 2018): "))
             to_year = int(input("Enter ending year (e.g. 2024): "))
@@ -116,11 +142,14 @@ class WeatherProcessor:
             print("Invalid input. Please enter valid numeric years.")
 
     def generate_line_plot(self):
+        """
+        Generates a line plot for daily mean temperatures for a specified month and year.
+        """
         try:
             year = int(input("Enter year (e.g. 2023): "))
             month = int(input("Enter month (1-12): "))
 
-            if not (1 <= month <= 12):
+            if not 1 <= month <= 12:
                 print("Month must be between 1 and 12.")
                 return
 
