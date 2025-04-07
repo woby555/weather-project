@@ -3,7 +3,8 @@ Description: Python Project Milestone 1 - Database Operations
 Author: Jake Licmo
 Date: 2025-03-28
 """
-
+import os
+import csv
 from dbcm import DBCM
 
 class DBOperations:
@@ -76,3 +77,38 @@ class DBOperations:
         """
         with DBCM(self.db_name) as cursor:
             cursor.execute('DELETE FROM weather')
+
+    def get_latest_date(self, location="Winnipeg"):
+        """
+        Gets the most recent sample_date in the DB for a given location.
+        """
+        with DBCM(self.db_name) as cursor:
+            cursor.execute('''
+                SELECT MAX(sample_date) FROM weather
+                WHERE location = ?
+            ''', (location,))
+            result = cursor.fetchone()
+            return result[0]
+
+
+    def export_to_csv(self, output_path, location="Winnipeg"):
+        """
+        Exports all weather data for a specific location to a CSV file.
+        :param output_path: The file path to save the CSV.
+        :param location: The location to export data for.
+        """
+        data = self.fetch_data(location)
+
+        if not data:
+            print(f"No data found for location: {location}")
+            return
+
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+        with open(output_path, "w", newline="") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(["Date", "Min Temp", "Max Temp", "Mean Temp"])
+            for row in data:
+                writer.writerow(row)
+
+        print(f"Data exported to {output_path}")

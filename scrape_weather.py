@@ -6,6 +6,8 @@ Date: 2025-03-28
 from datetime import datetime, timedelta
 from html.parser import HTMLParser
 import requests
+import os
+import csv
 
 class WeatherScraper(HTMLParser):
     """
@@ -118,7 +120,7 @@ class WeatherScraper(HTMLParser):
         current_date = self.start_date
 
         while True:
-            if self.earliest_date and current_date < self.earliest_date:
+            if self.earliest_date and current_date.date() < self.earliest_date:
                 print(f"Reached earliest target date ({self.earliest_date.strftime('%Y-%m-%d')}). Stopping.")
                 break
 
@@ -153,8 +155,6 @@ class WeatherScraper(HTMLParser):
             current_date = first_day_this_month - timedelta(days=1)
 
         return self.weather_data
-
-
 
 if __name__ == "__main__":
     today = datetime.today()

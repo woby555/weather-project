@@ -21,7 +21,7 @@ def main():
     today = datetime.today()
     earliest_date = datetime(2018, 1, 1)
 
-    scraper = WeatherScraper(BASE_URL, today, earliest_date)
+    scraper = WeatherScraper(BASE_URL, today, earliest_date.date())
     raw_data = scraper.scrape()
 
     db = DBOperations()
@@ -30,7 +30,7 @@ def main():
     # print("Purging old data from the database...")
     # db.purge_data()
 
-    db.save_data(raw_data)
+   # db.save_data(raw_data)
 
     print("\nSample data fetched from DB:")
     records = db.fetch_data("Winnipeg")
