@@ -31,6 +31,7 @@ class PlotOperations:
                 data.append(weather_data_by_month[month])
                 labels.append(self.month_number_to_name(month))
 
+        # Create boxplot
         plt.figure(figsize=(12, 6))
         plt.boxplot(data, labels=labels)
         plt.title("Monthly Mean Temperature Boxplot")
@@ -50,6 +51,7 @@ class PlotOperations:
         dates = [date for date, _ in daily_data]
         temps = [temp for _, temp in daily_data]
 
+        # Create lineplot
         plt.figure(figsize=(12, 5))
         plt.plot(dates, temps, marker='o')
         plt.title(f"Daily Mean Temperatures - {self.month_number_to_name(month)} {year}")

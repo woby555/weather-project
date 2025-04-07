@@ -75,12 +75,32 @@ class WeatherProcessor:
     def update_data(self):
         """
         Updates the weather data in the database by scraping new data from the web.
+        If no data is found in the DB, prompts user to perform a full scrape instead.
         """
         latest_str = self.db.get_latest_date()
         location = "Winnipeg"
 
         if not latest_str:
-            print("No existing data found in DB. Please run a full scrape first.")
+            print("No existing data found in the database.")
+            choice = input("Would you like to perform a full scrape and save to DB? (y/n): ").strip().lower()
+            if choice == 'y':
+                try:
+                    earliest_year = int(input("Enter earliest year to start full scrape (e.g. 2022): "))
+                    earliest_date = datetime(earliest_year, 1, 1)
+
+                    print(f"Scraping weather data from today back to {earliest_date.strftime('%Y-%m-%d')}...")
+                    scraper = WeatherScraper(self.base_url, datetime.today(), earliest_date.date())
+                    raw_data = scraper.scrape()
+
+                    if raw_data:
+                        self.db.save_data(raw_data, location)
+                        print(f"Full scrape complete. {len(raw_data)} records inserted.")
+                    else:
+                        print("No data was scraped.")
+                except ValueError:
+                    print("Invalid year input.")
+            else:
+                print("Update canceled.")
             return
 
         try:
