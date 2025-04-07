@@ -27,6 +27,18 @@ class WeatherProcessor:
             "&Day=1&Year={year}&Month={month}#"
         )
 
+    def show_menu(self):
+        """
+        Displays the main menu options to the user.
+        """
+        print("\n===== Weather Data Processor =====")
+        print("1. Download weather data (scrape & save to DB)")
+        print("2. Export current weather data to CSV")
+        print("3. Update weather data")
+        print("4. Generate box plot (year range)")
+        print("5. Generate line plot (month & year)")
+        print("6. Exit")
+
     def run(self):
         """
         Main loop to run the weather data processing program.
@@ -36,31 +48,46 @@ class WeatherProcessor:
             choice = input("Enter your choice: ").strip()
 
             if choice == '1':
-                self.download_full_data()
+                self.download_data()
             elif choice == '2':
-                self.update_data()
+                self.csv_export()
             elif choice == '3':
-                self.generate_box_plot()
+                self.update_data()
             elif choice == '4':
-                self.generate_line_plot()
+                self.generate_box_plot()
             elif choice == '5':
+                self.generate_line_plot()
+            elif choice == '6':
                 print("Exiting program.")
                 break
+            elif choice == 'x':  # hidden purge option
+                self.purge_all_data()
             else:
                 print("Invalid choice. Please try again.\n")
 
-    def show_menu(self):
+    def download_data(self):
         """
-        Displays the main menu options to the user.
+        Performs a full scrape from a user-defined earliest year and stores data in the DB.
         """
-        print("\n===== Weather Data Processor =====")
-        print("1. Download full weather data")
-        print("2. Update weather data")
-        print("3. Generate box plot (year range)")
-        print("4. Generate line plot (month & year)")
-        print("5. Exit")
+        try:
+            earliest_year = int(input("Enter earliest year to start scrape (e.g. 2022): "))
+            earliest_date = datetime(earliest_year, 1, 1)
+            location = "Winnipeg"
 
-    def download_full_data(self):
+            print(f"Scraping weather data from today back to {earliest_date.strftime('%Y-%m-%d')}...")
+            scraper = WeatherScraper(self.base_url, datetime.today(), earliest_date.date())
+            raw_data = scraper.scrape()
+
+            if raw_data:
+                self.db.save_data(raw_data, location)
+                print(f"Download complete. {len(raw_data)} records inserted into the database.")
+            else:
+                print("No data was scraped.")
+
+        except ValueError:
+            print("Invalid input. Please enter a numeric year.")
+
+    def csv_export(self):
         """
         Downloads the full weather data from the specified URL and saves it to the database.
         """
@@ -80,7 +107,7 @@ class WeatherProcessor:
         latest_str = self.db.get_latest_date()
         location = "Winnipeg"
 
-        if not latest_str:
+        if not latest_str: # Request full scrape if no data in DB
             print("No existing data found in the database.")
             choice = input("Would you like to perform a full scrape and save to DB? (y/n): ").strip().lower()
             if choice == 'y':
@@ -103,7 +130,7 @@ class WeatherProcessor:
                 print("Update canceled.")
             return
 
-        try:
+        try: # Finds the latest date in the DB
             latest_date = datetime.strptime(latest_str, "%Y-%m-%d").date()
         except ValueError:
             print("Could not parse latest date from DB.")
@@ -191,3 +218,14 @@ class WeatherProcessor:
 
         except ValueError:
             print("Invalid input. Please enter numeric values for year and month.")
+
+    def purge_all_data(self):
+        """
+        Purges all weather data from the database after user confirmation.
+        """
+        confirm = input("⚠️  DEV: This will permanently delete all weather data. Are you sure? (y/n): ").strip().lower()
+        if confirm == 'y':
+            self.db.purge_data()
+            print("All weather data has been purged from the database.")
+        else:
+            print("Purge cancelled.")
