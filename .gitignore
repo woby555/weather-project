@@ -6,3 +6,10 @@ __pycache__/dbcm.cpython-313.pyc
 __pycache__/scrape_weather.cpython-313.pyc
 weather_data.db
 weather_processor_test.py.csv
+/build
+/dist
+weather-project.csv
+main.spec
+/Output
+weather_data.db
+WeatherProcessingApp_Installer_Script.iss

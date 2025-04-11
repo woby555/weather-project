@@ -4,6 +4,7 @@ Author: Jake Licmo
 Date: 2025-03-28
 """
 import os
+import sys
 import csv
 from dbcm import DBCM
 
@@ -13,11 +14,23 @@ class DBOperations:
     """
     def __init__(self, db_name='weather_data.db'):
         """
-        Initializes the database connection and creates the table if it doesn't exist.
-        :param db_name: Name of the SQLite database file.
+        Initializes the database connection using a safe path.
         """
-        self.db_name = db_name
+        self.db_name = self.get_safe_path(db_name)
         self.initialize_db()
+
+    def get_safe_path(self, filename):
+        """
+        Returns a safe writable path for the database file.
+        """
+        # Check if running from PyInstaller bundle
+        if hasattr(sys, '_MEIPASS'):
+            base_path = os.path.expanduser('~\\AppData\\Local\\WeatherApp')  
+        else:
+            base_path = os.path.dirname(os.path.abspath(__file__))
+
+        os.makedirs(base_path, exist_ok=True)
+        return os.path.join(base_path, filename)
 
     def initialize_db(self):
         """
