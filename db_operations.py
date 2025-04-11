@@ -25,7 +25,7 @@ class DBOperations:
         """
         # Check if running from PyInstaller bundle
         if hasattr(sys, '_MEIPASS'):
-            base_path = os.path.expanduser('~\\AppData\\Local\\WeatherApp')  
+            base_path = os.path.expanduser('~\\AppData\\Local\\WeatherApp')
         else:
             base_path = os.path.dirname(os.path.abspath(__file__))
 

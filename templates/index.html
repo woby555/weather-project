@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Weather Data App</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Weather Processing App</h1>
+
+    {% if message %}
+        <div class="feedback-box">{{ message }}</div>
+    {% endif %}
+
+
+    <form action="/download" method="post">
+      <label>Download Weather Data:</label>
+      <input type="date" name="start_date" required>
+      <button type="submit">Download</button>
+    </form>
+
+    <form action="/update" method="post">
+      <button type="submit">Update Weather Data</button>
+    </form>
+
+    <form action="/boxplot" method="post">
+      <label>Boxplot (Mean Temp):</label>
+      <input type="number" name="from_year" placeholder="From Year" required>
+      <input type="number" name="to_year" placeholder="To Year" required>
+      <button type="submit">Generate</button>
+    </form>
+
+    <form action="/lineplot" method="post">
+      <label>Line Plot:</label>
+      <input type="number" name="year" placeholder="Year" required>
+      <input type="number" name="month" placeholder="Month" required>
+      <button type="submit">Generate</button>
+    </form>
+
+    <div class="plot-area">
+      {% if plot_path %}
+        <h2>Generated Plot</h2>
+        <img src="{{ plot_path }}" alt="Generated Plot">
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

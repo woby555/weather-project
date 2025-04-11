@@ -65,27 +65,22 @@ class WeatherProcessor:
             else:
                 print("Invalid choice. Please try again.\n")
 
-    def download_data(self):
+    def download_data(self, start_date: str) -> str:
         """
-        Performs a full scrape from a user-defined earliest year and stores data in the DB.
+        Perform a full scrape from the given start_date (YYYY-MM-DD) and return feedback.
         """
         try:
-            earliest_year = int(input("Enter earliest year to start scrape (e.g. 2022): "))
-            earliest_date = datetime(earliest_year, 1, 1)
-            location = "Winnipeg"
-
-            print(f"Scraping weather data from today back to {earliest_date.strftime('%Y-%m-%d')}...")
-            scraper = WeatherScraper(self.base_url, datetime.today(), earliest_date.date())
-            raw_data = scraper.scrape()
-
-            if raw_data:
-                self.db.save_data(raw_data, location)
-                print(f"Download complete. {len(raw_data)} records inserted into the database.")
+            earliest_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+            scraper = WeatherScraper(self.base_url, datetime.today(), earliest_date)
+            data = scraper.scrape()
+            if data:
+                self.db.save_data(data, "Winnipeg")
+                return f"✅ Download complete. {len(data)} records inserted."
             else:
-                print("No data was scraped.")
+                return "⚠️ No new data found for the specified range."
+        except Exception as e:
+            return f"❌ Error: {e}"
 
-        except ValueError:
-            print("Invalid input. Please enter a numeric year.")
 
     def csv_export(self):
         """
@@ -101,123 +96,69 @@ class WeatherProcessor:
 
     def update_data(self):
         """
-        Updates the weather data in the database by scraping new data from the web.
-        If no data is found in the DB, prompts user to perform a full scrape instead.
-        """
-        latest_str = self.db.get_latest_date()
-        location = "Winnipeg"
-
-        if not latest_str: # Request full scrape if no data in DB
-            print("No existing data found in the database.")
-            choice = input("Would you like to perform a full scrape and save to DB? (y/n): ").strip().lower()
-            if choice == 'y':
-                try:
-                    earliest_year = int(input("Enter earliest year to start full scrape (e.g. 2022): "))
-                    earliest_date = datetime(earliest_year, 1, 1)
-
-                    print(f"Scraping weather data from today back to {earliest_date.strftime('%Y-%m-%d')}...")
-                    scraper = WeatherScraper(self.base_url, datetime.today(), earliest_date.date())
-                    raw_data = scraper.scrape()
-
-                    if raw_data:
-                        self.db.save_data(raw_data, location)
-                        print(f"Full scrape complete. {len(raw_data)} records inserted.")
-                    else:
-                        print("No data was scraped.")
-                except ValueError:
-                    print("Invalid year input.")
-            else:
-                print("Update canceled.")
-            return
-
-        try: # Finds the latest date in the DB
-            latest_date = datetime.strptime(latest_str, "%Y-%m-%d").date()
-        except ValueError:
-            print("Could not parse latest date from DB.")
-            return
-
-        today = datetime.today().date()
-
-        if latest_date >= today:
-            print("Weather data is already up-to-date.")
-            return
-
-        print(f"Scraping data from {latest_date + timedelta(days=1)} to {today}...")
-
-        scraper = WeatherScraper(
-            base_url=self.base_url,
-            start_date=datetime.today(),  # always scrape backwards from today
-            earliest_date=latest_date + timedelta(days=1)  # stop when reaching this
-        )
-
-        data = scraper.scrape()
-
-        if data:
-            self.db.save_data(data, location)
-            print(f"{len(data)} new records inserted.")
-        else:
-            print("No new data found.")
-
-    def generate_box_plot(self):
-        """
-        Generates a box plot for the mean temperatures over a specified year range.
+        Scrape new weather data after the latest DB entry.
         """
         try:
-            from_year = int(input("Enter starting year (e.g. 2018): "))
-            to_year = int(input("Enter ending year (e.g. 2024): "))
-
-            if from_year > to_year:
-                print("Starting year cannot be greater than ending year.")
+            latest_str = self.db.get_latest_date()
+            if not latest_str:
+                print("[update_data] No existing data.")
                 return
 
+            latest_date = datetime.strptime(latest_str, "%Y-%m-%d").date()
+            today = datetime.today().date()
+
+            if latest_date >= today:
+                print("[update_data] Already up-to-date.")
+                return
+
+            scraper = WeatherScraper(
+                base_url=self.base_url,
+                start_date=datetime.today(),
+                earliest_date=latest_date + timedelta(days=1)
+            )
+            data = scraper.scrape()
+            if data:
+                self.db.save_data(data, "Winnipeg")
+        except Exception as e:
+            print(f"[update_data] Error: {e}")
+
+
+    def generate_boxplot(self, from_year: int, to_year: int, save_path: str):
+        """
+        Generate boxplot and save to the given path.
+        """
+        try:
             with DBCM(self.db.db_name) as cursor:
                 cursor.execute('''
                     SELECT sample_date, min_temp, max_temp, avg_temp FROM weather
                     WHERE location = ? AND
-                        CAST(substr(sample_date, 1, 4) AS INTEGER) BETWEEN ? AND ?
+                          CAST(substr(sample_date, 1, 4) AS INTEGER) BETWEEN ? AND ?
                     ORDER BY sample_date
                 ''', ("Winnipeg", from_year, to_year))
                 data = cursor.fetchall()
+            if data:
+                self.plotter.create_boxplot_from_raw_data(data, save_path=save_path)
+        except Exception as e:
+            print(f"[generate_boxplot] Error: {e}")
 
-            if not data:
-                print("No data available in the specified range.")
-                return
-
-            self.plotter.create_boxplot_from_raw_data(data)
-
-        except ValueError:
-            print("Invalid input. Please enter valid numeric years.")
-
-    def generate_line_plot(self):
+    def generate_lineplot(self, year: int, month: int, save_path: str):
         """
-        Generates a line plot for daily mean temperatures for a specified month and year.
+        Generate lineplot for a specific month and year.
         """
         try:
-            year = int(input("Enter year (e.g. 2023): "))
-            month = int(input("Enter month (1-12): "))
-
-            if not 1 <= month <= 12:
-                print("Month must be between 1 and 12.")
-                return
-
             with DBCM(self.db.db_name) as cursor:
                 cursor.execute('''
                     SELECT sample_date, min_temp, max_temp, avg_temp FROM weather
                     WHERE location = ? AND
-                        CAST(substr(sample_date, 1, 4) AS INTEGER) = ? AND
-                        CAST(substr(sample_date, 6, 2) AS INTEGER) = ?
+                          CAST(substr(sample_date, 1, 4) AS INTEGER) = ? AND
+                          CAST(substr(sample_date, 6, 2) AS INTEGER) = ?
                     ORDER BY sample_date
                 ''', ("Winnipeg", year, month))
                 data = cursor.fetchall()
-
-            if not data:
-                print("No data available for that month and year.")
-                return
-
-            self.plotter.create_lineplot_from_raw_data(data, year, month)
-
-        except ValueError:
-            print("Invalid input. Please enter numeric values for year and month.")
+            if data:
+                self.plotter.create_lineplot_from_raw_data(data, year, month, save_path=save_path)
+        except Exception as e:
+            print(f"[generate_lineplot] Error: {e}")
 
     def purge_all_data(self):
         """
