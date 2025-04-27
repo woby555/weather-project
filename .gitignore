@@ -13,3 +13,4 @@ main.spec
 /Output
 weather_data.db
 WeatherProcessingApp_Installer_Script.iss
+__pycache__/db_operations.cpython-313.pyc
