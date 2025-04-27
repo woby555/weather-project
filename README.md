@@ -20,8 +20,8 @@ It focuses on **Winnipeg weather records** sourced directly from Environment Can
 
 1. **Clone this repository:**
    ```bash
-   git clone https://github.com/your-username/weather-data-processing-cli.git
-   cd weather-data-processing-cli
+   git clone https://github.com/woby555/weather-project.git
+   cd weather-project
    ```
 
 2. **Install dependencies:**
@@ -32,7 +32,7 @@ It focuses on **Winnipeg weather records** sourced directly from Environment Can
 
 3. **Run the CLI tool:**
    ```bash
-   python weather_processor.py
+   python main.py
    ```
 
 4. **Follow the on-screen prompts to:**
